@@ -1,0 +1,53 @@
+name: Claude Issue Triage
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  triage:
+    if: github.event.issue.pull_request == null
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code Triage
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+          claude_args: |
+            --allowed-tools "Bash(gh label list:*),Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Read,Grep,Glob"
+
+          prompt: |
+            Analiza el issue #${{ github.event.issue.number }} de este repositorio (Tetris en vanilla JS: index.html, style.css, game.js).
+
+            Pasos:
+            1. Lee el issue con `gh issue view ${{ github.event.issue.number }}`.
+            2. Lista los labels existentes con `gh label list` y asigna solo labels de esa lista (nunca crees labels nuevas) con `gh issue edit ${{ github.event.issue.number }} --add-label "..."`. Usa tu criterio para elegir entre bug, enhancement, documentation, question, accessibility, duplicate, invalid, wontfix, good first issue, help wanted.
+            3. Revisa game.js, index.html y style.css (los archivos relevantes) para entender dónde probablemente vive el problema.
+            4. Publica (o actualiza, ver paso 5) UN comentario de diagnóstico en el issue con `gh issue comment ${{ github.event.issue.number }} --body "..."`, con esta estructura exacta:
+
+               ## 🔍 Diagnóstico automático
+
+               **Resumen:** (1-2 frases del problema o solicitud)
+
+               **Archivos/funciones probables:** (rutas y nombres de función concretos del repo, ej. `game.js:tryRotate`)
+
+               **Causa probable:** (hipótesis técnica concreta, o "necesita más información" si el issue es vago)
+
+               **Enfoque de solución sugerido:** (pasos concretos de implementación, no código completo)
+
+               **Complejidad estimada:** baja / media / alta
+
+               **Información faltante:** (qué le falta al issue para poder implementarse, o "ninguna" si está completo)
+
+            5. Antes de comentar, revisa los comentarios existentes del issue. Si ya existe uno que empiece con "## 🔍 Diagnóstico automático" (de una edición anterior), edítalo con `gh issue comment` solo si es necesario evitar duplicados: usa `gh api` para editar ese comentario existente en lugar de crear uno nuevo, o si no es posible, deja claro en el nuevo comentario que es una actualización del diagnóstico anterior.
+            6. No modifiques código, no abras pull requests, no cierres el issue.
