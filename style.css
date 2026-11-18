@@ -1,4 +1,5 @@
 :root {
+  --title-h: 56px;
   --bg: #0f0f17;
   --text: #e0e0e0;
   --accent: #7aa2f7;
@@ -57,23 +58,30 @@ body {
 }
 
 .title {
-  font-size: 36px;
+  height: var(--title-h);
+  line-height: var(--title-h);
+  text-align: center;
+  font-size: 34px;
   font-weight: 800;
   letter-spacing: 12px;
   /* compensa el letter-spacing final para centrar visualmente */
   padding-left: 12px;
   color: var(--accent);
-  margin-bottom: 16px;
-}
-
-.wrapper {
-  position: relative;
 }
 
 .game-container {
   display: flex;
   gap: 20px;
-  align-items: flex-start;
+  align-items: stretch;
+}
+
+.board-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.board-wrap {
+  position: relative;
 }
 
 #board {
@@ -85,12 +93,15 @@ body {
 }
 
 /* ---- Panel lateral ---- */
+/* padding-top compensa el título para que el panel arranque a la altura
+   del tablero; overflow lo mantiene dentro del alto del tablero */
 .panel {
   width: 160px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding-top: 4px;
+  gap: 16px;
+  padding-top: var(--title-h);
+  overflow: hidden;
 }
 
 .panel-section {
@@ -114,7 +125,8 @@ body {
   letter-spacing: 1px;
 }
 
-#next-canvas {
+#next-canvas,
+#hold-canvas {
   display: block;
   border: 1px solid var(--border);
   background: var(--surface);
@@ -125,16 +137,18 @@ body {
 .controls ul {
   list-style: none;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 4px 8px;
 }
 
 .controls li {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--muted);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
+  white-space: nowrap;
 }
 
 kbd {
